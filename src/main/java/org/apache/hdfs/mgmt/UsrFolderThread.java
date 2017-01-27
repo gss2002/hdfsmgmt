@@ -35,9 +35,9 @@ public class UsrFolderThread extends Thread {
 	UserGroupInformation ugi = null;
 
 	public UsrFolderThread() {
-		ldapGroup = HDFSMgmt.ldapGroup;
-		gcbaseDn = HDFSMgmt.gcbaseDn;
-		gcldapURL = HDFSMgmt.gcldapURL;
+		ldapGroup = HDFSMgmtBean.ldapGroup;
+		gcbaseDn = HDFSMgmtBean.gcbaseDn;
+		gcldapURL = HDFSMgmtBean.gcldapURL;
 		try {
 			userPrincipalName = UserGroupInformation.getCurrentUser().getUserName();
 		} catch (IOException e) {
@@ -50,33 +50,36 @@ public class UsrFolderThread extends Thread {
 
 	@Override
 	public void run() {
-		synchronized (lock) {
-			while (true) {
-				try {
-					// manageFolders(this.ldapUsr, this.hdpConfig, this.fs);
-					manageFolders();
-					lock.wait(300000L);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if (HDFSMgmtBean.daemon) {
+			synchronized (lock) {
+				while (true) {
+					try {
+						manageFolders();
+						lock.wait(300000L);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
+		} else {
+			manageFolders();
 		}
 	}
 
 	public void manageFolders() {
 
 		try {
-			if (HDFSMgmt.useHdfsKeytab) {
-	            ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(HDFSMgmt.hdfs_keytabupn,HDFSMgmt.hdfs_keytab);
+			if (HDFSMgmtBean.useHdfsKeytab) {
+	            ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(HDFSMgmtBean.hdfs_keytabupn,HDFSMgmtBean.hdfs_keytab);
 	            UserGroupInformation.setLoginUser(ugi);
 			} else {
 				ugi = UserGroupInformation.getCurrentUser();
 			}
 			System.out.println("HdfsUPN: "+ugi.getUserName());
-			if (HDFSMgmt.useAdKeytab) {
-				System.out.println("adupn: "+HDFSMgmt.ad_keytabupn);
-				krbClient = new KerberosClient(HDFSMgmt.ad_keytabupn, null, HDFSMgmt.ad_keytab);
+			if (HDFSMgmtBean.useAdKeytab) {
+				System.out.println("adupn: "+HDFSMgmtBean.ad_keytabupn);
+				krbClient = new KerberosClient(HDFSMgmtBean.ad_keytabupn, null, HDFSMgmtBean.ad_keytab);
 
 			} else {
 				System.out.println("adupn: "+userPrincipalName);
@@ -95,12 +98,12 @@ public class UsrFolderThread extends Thread {
 				public Void run() throws Exception {
 
 					try {
-						fs = FileSystem.get(HDFSMgmt.hdpConfig);
+						fs = FileSystem.get(HDFSMgmtBean.hdpConfig);
 					} catch (IOException e2) {
 						// TODO Auto-generated catch block
 						e2.printStackTrace();
 					}
-					if (HDFSMgmt.userFolder) {
+					if (HDFSMgmtBean.userFolder) {
 						System.out.println("LdapGroup: " + ldapGroup);
 						String groupSamAccountName = gcapi.getSamAccountNameFromCN(gcldpClient, gcbaseDn, ldapGroup);
 						System.out.println("GroupSamAccountName: " + groupSamAccountName);
@@ -116,7 +119,7 @@ public class UsrFolderThread extends Thread {
 							for (int i = 0; i < groupMbrList.size(); i++) {
 								String member = gcapi.getSamAccountName(
 										gcapi.getUserDNAttrs(gcldpClient, gcbaseDn, groupMbrList.get(i)));
-								UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmt.hdpConfig, fs);
+								UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmtBean.hdpConfig, fs);
 								u.start();
 								counter++;
 								synchronized (userProclock) {
@@ -135,7 +138,7 @@ public class UsrFolderThread extends Thread {
 								for (int i = 0; i < groupMbrList.size(); i++) {
 									String member = gcapi.getSamAccountName(
 											gcapi.getUserDNAttrs(gcldpClient, gcbaseDn, groupMbrList.get(i)));
-									UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmt.hdpConfig, fs);
+									UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmtBean.hdpConfig, fs);
 									u.start();
 									counter++;
 									synchronized (userProclock) {

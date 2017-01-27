@@ -7,6 +7,9 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.apache.commons.daemon.DaemonInitException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -14,21 +17,47 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HDFSMgmt {
-	private static final Logger LOG = LoggerFactory.getLogger(HDFSMgmt.class);
+public class HDFSMgmtServer implements Daemon {
+	private static final Logger LOG = LoggerFactory.getLogger(HDFSMgmtServer.class);
 	static Options options = new Options();
+	static Configuration conf = new Configuration();
+    UsrFolderThread csuf;
 
 
 
+	
+	public static void setHdpConfig(){
+		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hive/conf/hive-site.xml"));
+		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
+		HDFSMgmtBean.hdpConfig.set("hadoop.security.authentication", "kerberos");
+		UserGroupInformation.setConfiguration(HDFSMgmtBean.hdpConfig);
+		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
+		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
+		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
+	}
 
-	public static void main(String[] args) {
+		
+	private static void missingParams() {
+		String header = "HDFS User Folder Management and /tmp file system Cleanup";
+		String footer = "\nPlease report issues at http://github.com/gss2002";
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("get", header, options, footer, true);
+		System.exit(0);
+	}
+
+	@Override
+	public void init(DaemonContext context) throws DaemonInitException, Exception {
 		// TODO Auto-generated method stub
+		
 		HDFSMgmtBean.init();
-		HDFSMgmtBean.daemon = false;
+		HDFSMgmtBean.daemon = true;
+		LOG.debug("Daemon initialized with arguments {}.", context.getArguments().toString());
+
 		Configuration conf = new Configuration();
 		String[] otherArgs = null;
 		try {
-			otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+			otherArgs = new GenericOptionsParser(conf, context.getArguments()).getRemainingArgs();
 		} catch (IOException e4) {
 			// TODO Auto-generated catch block
 			e4.printStackTrace();
@@ -96,30 +125,31 @@ public class HDFSMgmt {
 	    	}
 	    }
 	    setHdpConfig();
-	    UsrFolderThread csuf = new UsrFolderThread();
+
+
+	}
+
+	@Override
+	public void start() throws Exception {
+		// TODO Auto-generated method stub
+	    csuf = new UsrFolderThread();
 	    csuf.setName("CreateSetUsrFolder-Thread");
+	    csuf.setDaemon(true);
 	    csuf.start();
-
-	}
-	
-	public static void setHdpConfig(){
-		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
-		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hive/conf/hive-site.xml"));
-		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
-		HDFSMgmtBean.hdpConfig.set("hadoop.security.authentication", "kerberos");
-		UserGroupInformation.setConfiguration(HDFSMgmtBean.hdpConfig);
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
 	}
 
+	@Override
+	public void stop() throws Exception {
+		// TODO Auto-generated method stub
+		csuf.interrupt();
 		
-	private static void missingParams() {
-		String header = "HDFS User Folder Management and /tmp file system Cleanup";
-		String footer = "\nPlease report issues at http://github.com/gss2002";
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("get", header, options, footer, true);
-		System.exit(0);
+		
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		csuf.interrupt();
 	}
 
 }
