@@ -119,6 +119,9 @@ public class UsrFolderThread extends Thread {
 							for (int i = 0; i < groupMbrList.size(); i++) {
 								String member = gcapi.getSamAccountName(
 										gcapi.getUserDNAttrs(gcldpClient, gcbaseDn, groupMbrList.get(i)));
+								if (HDFSMgmtBean.lcaseUid) {
+									member = member.toLowerCase();
+								}
 								UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmtBean.hdpConfig, fs);
 								u.start();
 								counter++;
