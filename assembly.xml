@@ -5,6 +5,7 @@
 	<formats>
 		<format>tar.gz</format>
 	</formats>
+	<baseDirectory>${project.basedir}</baseDirectory>
 	<fileSets>
 		<fileSet>
 			<directory>${project.basedir}</directory>
@@ -22,7 +23,7 @@
 				<include>*.jar</include>
 			</includes>
 		</fileSet>
-				<fileSet>
+		<fileSet>
 			<directory>${project.basedir}/src/main/resources</directory>
 			<outputDirectory></outputDirectory>
 			<includes>
@@ -48,8 +49,8 @@
 				<include>org.apache:adldap</include>
 				<include>commons-daemon:commons-daemon</include>
 			</includes>
-			<excludes>       
-			 <exclude>log4j:log4j</exclude>
+			<excludes>
+				<exclude>log4j:log4j</exclude>
 			</excludes>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<outputDirectory>lib</outputDirectory>
