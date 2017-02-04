@@ -71,12 +71,12 @@ public class HDFSMgmt {
 	    	File hdfs_keytabFile = new File(HDFSMgmtBean.hdfs_keytab);
 	    	if (hdfs_keytabFile.exists()) {
 	    		if (!(hdfs_keytabFile.canRead())) { 
-		    		System.out.println("HDFS KeyTab  exists but cannot read it - exiting");
+		    		LOG.error("HDFS KeyTab  exists but cannot read it - exiting");
 		    		System.exit(1);
 	    		}
 	    		HDFSMgmtBean.useHdfsKeytab=true;
 	    	} else {
-	    		System.out.println("HDFS KeyTab doesn't exist  - exiting");
+	    		LOG.error("HDFS KeyTab doesn't exist  - exiting");
 	    		System.exit(1);
 	    	}
 	    }
@@ -86,12 +86,12 @@ public class HDFSMgmt {
 	    	File ad_keytabFile = new File(HDFSMgmtBean.ad_keytab);
 	    	if (ad_keytabFile.exists()) {
 	    		if (!(ad_keytabFile.canRead())) { 
-		    		System.out.println("AD KeyTab  exists but cannot read it - exiting");
+		    		LOG.error("AD KeyTab  exists but cannot read it - exiting");
 		    		System.exit(1);
 	    		}
 	    		HDFSMgmtBean.useAdKeytab=true;
 	    	} else {
-	    		System.out.println("AD KeyTab doesn't exist  - exiting");
+	    		LOG.error("AD KeyTab doesn't exist  - exiting");
 	    		System.exit(1);
 	    	}
 	    }
@@ -108,9 +108,9 @@ public class HDFSMgmt {
 		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
 		HDFSMgmtBean.hdpConfig.set("hadoop.security.authentication", "kerberos");
 		UserGroupInformation.setConfiguration(HDFSMgmtBean.hdpConfig);
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
 	}
 
 		

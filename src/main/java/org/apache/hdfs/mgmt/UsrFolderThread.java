@@ -16,8 +16,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UsrFolderThread extends Thread {
+	private static final Logger LOG = LoggerFactory.getLogger(UsrFolderThread.class);
+
 	static InitialDirContext ctx = null;
 	public static String gcbaseDn = "";
 	public static String gcldapURL = "";
@@ -76,20 +80,20 @@ public class UsrFolderThread extends Thread {
 			} else {
 				ugi = UserGroupInformation.getCurrentUser();
 			}
-			System.out.println("HdfsUPN: "+ugi.getUserName());
+			LOG.debug("HdfsUPN: "+ugi.getUserName());
 			if (HDFSMgmtBean.useAdKeytab) {
-				System.out.println("adupn: "+HDFSMgmtBean.ad_keytabupn);
+				LOG.debug("adupn: "+HDFSMgmtBean.ad_keytabupn);
 				krbClient = new KerberosClient(HDFSMgmtBean.ad_keytabupn, null, HDFSMgmtBean.ad_keytab);
 
 			} else {
-				System.out.println("adupn: "+userPrincipalName);
+				LOG.debug("adupn: "+userPrincipalName);
 				krbClient = new KerberosClient(userPrincipalName);				
 			}
 			gcldpClient = new LdapClientSASL(gcbaseDn, gcldapURL, krbClient.getSubject());
 			gcapi = new LdapApi();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOG.error(e1.getMessage());
 		}
 		ugi.setAuthenticationMethod(UserGroupInformation.AuthenticationMethod.KERBEROS);
 		try {
@@ -101,21 +105,21 @@ public class UsrFolderThread extends Thread {
 						fs = FileSystem.get(HDFSMgmtBean.hdpConfig);
 					} catch (IOException e2) {
 						// TODO Auto-generated catch block
-						e2.printStackTrace();
+						LOG.error(e2.getMessage());
 					}
 					if (HDFSMgmtBean.userFolder) {
-						System.out.println("LdapGroup: " + ldapGroup);
+						LOG.info("LdapGroup: " + ldapGroup);
 						String groupSamAccountName = gcapi.getSamAccountNameFromCN(gcldpClient, gcbaseDn, ldapGroup);
-						System.out.println("GroupSamAccountName: " + groupSamAccountName);
+						LOG.info("GroupSamAccountName: " + groupSamAccountName);
 						Map<String, Attribute> groupResults = gcapi.getADGroupGCAttrs(gcldpClient, gcbaseDn,
 								groupSamAccountName);
-						System.out.println("groupResults Null: " + groupResults.isEmpty());
+						LOG.debug("groupResults Null: " + groupResults.isEmpty());
 						if (gcapi.groupRangingExists(groupResults)) {
-							System.out.println("getGroupMembers - Ranging=TRUE");
+							LOG.debug("getGroupMembers - Ranging=TRUE");
 							List<String> groupMbrList = gcapi.getGroupMemberRanging(gcldpClient, gcbaseDn,
 									groupSamAccountName);
 							int counter = 0;
-							System.out.println("Checking LdapUsers: " + groupMbrList.size());
+							LOG.debug("Checking LdapUsers: " + groupMbrList.size());
 							for (int i = 0; i < groupMbrList.size(); i++) {
 								String member = gcapi.getSamAccountName(
 										gcapi.getUserDNAttrs(gcldpClient, gcbaseDn, groupMbrList.get(i)));
@@ -133,14 +137,17 @@ public class UsrFolderThread extends Thread {
 								}
 							}
 						} else {
-							System.out.println("getGroupMembers - Ranging=FALSE");
+							LOG.debug("getGroupMembers - Ranging=FALSE");
 							List<String> groupMbrList = gcapi.getGroupMembers(groupResults);
 							if (groupMbrList != null) {
 								int counter = 0;
-								System.out.println("Checking LdapUsers: " + groupMbrList.size());
+								LOG.debug("Checking LdapUsers: " + groupMbrList.size());
 								for (int i = 0; i < groupMbrList.size(); i++) {
 									String member = gcapi.getSamAccountName(
 											gcapi.getUserDNAttrs(gcldpClient, gcbaseDn, groupMbrList.get(i)));
+									if (HDFSMgmtBean.lcaseUid) {
+										member = member.toLowerCase();
+									}
 									UsrFolderThreadImpl u = new UsrFolderThreadImpl(member, HDFSMgmtBean.hdpConfig, fs);
 									u.start();
 									counter++;
@@ -163,10 +170,10 @@ public class UsrFolderThread extends Thread {
 			});
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage());
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage());
 		}
 
 	}

@@ -6,9 +6,9 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
 * Options parser that follows Sqoop's specific options-parsing needs.
@@ -21,7 +21,8 @@ import org.apache.hadoop.util.StringUtils;
 */
 public class HDFSMgmtParser extends GnuParser {
 
- public static final Log LOG = LogFactory.getLog(HDFSMgmtParser.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(HDFSMgmtParser.class);
+
 
  // We need a handle to Option.addValueForProcessing(String).
  // Since Hadoop will load this in a different classloader than

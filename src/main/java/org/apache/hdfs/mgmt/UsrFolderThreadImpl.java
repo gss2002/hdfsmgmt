@@ -5,11 +5,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 
 public class UsrFolderThreadImpl extends Thread {
+	private static final Logger LOG = LoggerFactory.getLogger(UsrFolderThreadImpl.class);
 
 	Configuration hdpConfig;
 	String ldapUsr;
@@ -35,13 +38,13 @@ public class UsrFolderThreadImpl extends Thread {
 			createUserFolder(ldapUser, hdpConfig, fs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage());
 		}
 		try {
 			setUserPerm(ldapUser, hdpConfig, fs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage());
 		}
 	}
 
@@ -53,7 +56,7 @@ public class UsrFolderThreadImpl extends Thread {
 
 	      }
 	     catch (  Exception e) {
-	    	 System.out.println("Couldnt change the file permissions for user "+user+" "+e.getStackTrace());
+	    	 LOG.error("Couldnt change the file permissions for user "+user+" "+e.getStackTrace());
 	        throw new IOException(e);
 	     }
 	}
@@ -67,7 +70,7 @@ public class UsrFolderThreadImpl extends Thread {
 
 	      }
 	     catch (  Exception e) {
-	    	 System.out.println("Couldnt create user folder "+user+ " "+e.getStackTrace());
+	    	 LOG.error("Couldnt create user folder "+user+ " "+e.getStackTrace());
 	        throw new IOException(e);
 	     }
 	}

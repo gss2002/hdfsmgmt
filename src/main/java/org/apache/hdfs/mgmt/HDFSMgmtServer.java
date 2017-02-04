@@ -32,9 +32,9 @@ public class HDFSMgmtServer implements Daemon {
 		HDFSMgmtBean.hdpConfig.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
 		HDFSMgmtBean.hdpConfig.set("hadoop.security.authentication", "kerberos");
 		UserGroupInformation.setConfiguration(HDFSMgmtBean.hdpConfig);
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
-		System.out.println("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("hadoop.security.authentication"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("dfs.namenode.kerberos.principal"));
+		LOG.info("Config: " + HDFSMgmtBean.hdpConfig.get("fs.defaultFS"));
 	}
 
 		
@@ -60,7 +60,7 @@ public class HDFSMgmtServer implements Daemon {
 			otherArgs = new GenericOptionsParser(conf, context.getArguments()).getRemainingArgs();
 		} catch (IOException e4) {
 			// TODO Auto-generated catch block
-			e4.printStackTrace();
+			LOG.error(e4.getMessage());
 		}
 
 		options.addOption("userfolder", false, "Create and/or set HDFS /user/username perms");
@@ -78,7 +78,7 @@ public class HDFSMgmtServer implements Daemon {
 			cmd = parser.parse(options, otherArgs);
 		} catch (ParseException e2) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			LOG.error(e2.getMessage());
 		}
 		if (cmd.hasOption("userfolder") || cmd.hasOption("tmpcleanup")) {
 			if (cmd.hasOption("userfolder")) {
@@ -100,12 +100,12 @@ public class HDFSMgmtServer implements Daemon {
 	    	File hdfs_keytabFile = new File(HDFSMgmtBean.hdfs_keytab);
 	    	if (hdfs_keytabFile.exists()) {
 	    		if (!(hdfs_keytabFile.canRead())) { 
-		    		System.out.println("HDFS KeyTab  exists but cannot read it - exiting");
+		    		LOG.error("HDFS KeyTab  exists but cannot read it - exiting");
 		    		System.exit(1);
 	    		}
 	    		HDFSMgmtBean.useHdfsKeytab=true;
 	    	} else {
-	    		System.out.println("HDFS KeyTab doesn't exist  - exiting");
+	    		LOG.error("HDFS KeyTab doesn't exist  - exiting");
 	    		System.exit(1);
 	    	}
 	    }
@@ -115,12 +115,12 @@ public class HDFSMgmtServer implements Daemon {
 	    	File ad_keytabFile = new File(HDFSMgmtBean.ad_keytab);
 	    	if (ad_keytabFile.exists()) {
 	    		if (!(ad_keytabFile.canRead())) { 
-		    		System.out.println("AD KeyTab  exists but cannot read it - exiting");
+		    		LOG.error("AD KeyTab  exists but cannot read it - exiting");
 		    		System.exit(1);
 	    		}
 	    		HDFSMgmtBean.useAdKeytab=true;
 	    	} else {
-	    		System.out.println("AD KeyTab doesn't exist  - exiting");
+	    		LOG.error("AD KeyTab doesn't exist  - exiting");
 	    		System.exit(1);
 	    	}
 	    }

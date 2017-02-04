@@ -24,17 +24,17 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${project.basedir}/src/main/resources</directory>
+			<directory>${project.basedir}/src/main/resources/bin</directory>
 			<outputDirectory></outputDirectory>
 			<includes>
 				<include>*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${project.build.directory}/dependencies</directory>
-			<outputDirectory>lib</outputDirectory>
+			<directory>${project.basedir}/src/main/resources/conf</directory>
+			<outputDirectory>conf</outputDirectory>
 			<includes>
-				<include>*.jar</include>
+				<include>*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
@@ -48,6 +48,7 @@
 			<includes>
 				<include>org.apache:adldap</include>
 				<include>commons-daemon:commons-daemon</include>
+				<include>org.slf4j:slf4j-log4j12</include>
 			</includes>
 			<excludes>
 				<exclude>log4j:log4j</exclude>
@@ -63,6 +64,7 @@
 				<includes>
 					<include>org.apache:adldap</include>
 					<include>commons-daemon:commons-daemon</include>
+					<include>org.slf4j:slf4j-log4j12</include>
 				</includes>
 			</binaries>
 		</moduleSet>

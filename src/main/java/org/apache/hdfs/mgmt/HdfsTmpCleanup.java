@@ -16,9 +16,13 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class HdfsTmpCleanup {
+	private static final Logger LOG = LoggerFactory.getLogger(HdfsTmpCleanup.class);
+
 	static Configuration hdpConfig = new Configuration();
 	static FileSystem fs = null;
 	static String type = null;
@@ -42,23 +46,23 @@ public class HdfsTmpCleanup {
 			otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 		} catch (IOException e4) {
 			// TODO Auto-generated catch block
-			e4.printStackTrace();
+			LOG.error(e4.getMessage());
 		}
 		
 	    currentTime = System.currentTimeMillis();
 	    long daysMS = days * 86400000L;
-	    System.out.println("7Days in MS: "+daysMS);
+	    LOG.debug("7Days in MS: "+daysMS);
 	    deleteTime = currentTime-daysMS;
-	    System.out.println("DeleteTimefromCurrent MS: "+deleteTime);
+	    LOG.debug("DeleteTimefromCurrent MS: "+deleteTime);
 
 		
 	    hdpConfig.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
 	    hdpConfig.addResource(new Path("/etc/hive/conf/hive-site.xml"));
 	    hdpConfig.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
 	    hdpConfig.set("hadoop.security.authentication", "kerberos");
-		System.out.println("Config: "+hdpConfig.get("hadoop.security.authentication"));
-		System.out.println("Config: "+hdpConfig.get("dfs.namenode.kerberos.principal"));
-		System.out.println("Config: "+hdpConfig.get("fs.defaultFS"));
+		LOG.info("Config: "+hdpConfig.get("hadoop.security.authentication"));
+		LOG.info("Config: "+hdpConfig.get("dfs.namenode.kerberos.principal"));
+		LOG.info("Config: "+hdpConfig.get("fs.defaultFS"));
 	    UserGroupInformation.setConfiguration(hdpConfig);
 		UserGroupInformation ugi = null;
 		inPath = new Path("/tmp");
@@ -75,7 +79,7 @@ public class HdfsTmpCleanup {
 			ugi = UserGroupInformation.getCurrentUser();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOG.error(e1.getMessage());
 		}
 	    ugi.setAuthenticationMethod(UserGroupInformation.AuthenticationMethod.KERBEROS);
 	    try {
@@ -87,7 +91,7 @@ public class HdfsTmpCleanup {
 						fs = FileSystem.get(hdpConfig);
 					} catch (IOException e2) {
 						// TODO Auto-generated catch block
-						e2.printStackTrace();
+						LOG.error(e2.getMessage());
 					}
 			    	getFolderData(fs, inPath, 10);
 	
@@ -99,7 +103,7 @@ public class HdfsTmpCleanup {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage());
 		}
 		
 		
@@ -111,10 +115,10 @@ public class HdfsTmpCleanup {
 			fsList = fs.listStatus(inPath);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOG.error(e1.getMessage());
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOG.error(e1.getMessage());
 		}
 		/*
 		if (inPath.getName().toString().startsWith("temp")){ 
@@ -129,7 +133,7 @@ public class HdfsTmpCleanup {
 		}
 		*/
 		if (inPath.depth() == 2) {
-			System.out.println("Iterating: "+inPath);
+			LOG.debug("Iterating: "+inPath);
  			if (folderLinkedList == null) {
  				folderLinkedList = new LinkedList<Path>();
  			}
@@ -143,12 +147,12 @@ public class HdfsTmpCleanup {
 						long modifyTime = fs.getFileStatus(outPath).getModificationTime();
 
 					    calendar.setTimeInMillis(modifyTime);
-					    System.out.println(modifyTime + " = " + formatter.format(calendar.getTime())+" Deleting Path::"+outPath);
+					    LOG.debug(modifyTime + " = " + formatter.format(calendar.getTime())+" Deleting Path::"+outPath);
 		    			 try {
 							shell.run(new String[]{"-rm","-R",""+outPath.toString().replace(fs.getUri().toString(), "")+""});
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							LOG.error(e.getMessage());
 						}
 
 
@@ -205,14 +209,14 @@ public class HdfsTmpCleanup {
 							folderLinkedList.add(inPath);
 						}
 						
-						//System.out.println("Delete Path="+inPath+" :: Depth="+inPath.depth()+" :: ModifyTime="+modifyTime+" :: Parent="+inPath.getParent().toString());
+						LOG.debug("Delete Path="+inPath+" :: Depth="+inPath.depth()+" :: ModifyTime="+modifyTime+" :: Parent="+inPath.getParent().toString());
 
 
 
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error(e.getMessage());
 			}
 			
     }

@@ -1,0 +1,58 @@
+#!/bin/sh
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+PIDFILE=/var/run/hdfsmgmt.pid
+HADOOP_HOME_PATH=/usr/hdp/current/hadoop-client
+HADOOP_CONFIG_SCRIPT=$HADOOP_HOME_PATH/libexec/hadoop-config.sh
+HADOOP_CLIENT_LIBS=$HADOOP_HOME_PATH/client
+if [ -e $HADOOP_CONFIG_SCRIPT ] ; then
+        .  $HADOOP_CONFIG_SCRIPT
+else
+        /bin/echo "Hadoop Client not Installed on Node"
+        exit 1
+fi
+case "$1" in
+        start)
+			if [ -e $JAVA_HOME/bin/java ] ; then
+				ad_keytabin=`/bin/grep ad_keytab $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="="} {print $NF}';`
+				ldapGroup=`/bin/grep ldapGroup $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="="} {print $NF}';`
+				ad_keytab=$bin/conf/$ad_keytabin
+				if [ ! -e $ad_keytab ] ; then
+					exit 1	
+				fi	
+				hdfs_keytab=`/bin/grep hdfs_keytab $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="="} {print $NF}';`
+    			if [ ! -e $hdfs_keytab ] ; then
+    				exit 1
+    			fi
+				ldapgroup=`/bin/grep ldapGroup $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="="} {print $NF}';`
+				hdfs_upn=`/bin/klist -k /etc/security/keytabs/hdfs.headless.keytab | tail -1 | awk '{print $NF}';`
+				ad_upn=`/bin/klist -k $ad_keytab | tail -1 | awk '{print $NF}';`
+				hdfs_upn=`/bin/klist -k $hdfs_keytab | tail -1 | awk '{print $NF}';`
+        		/usr/lib/bigtop-utils/jsvc -jvm server -user hdfs -outfile /var/log/hdfsmgmt/hdfsmgmt.out -Dlog4j.configuration=file://$bin/conf/log4j.properties -cp "$bin/lib/*:$HADOOP_CLIENT_LIBS/*" org.apache.hdfs.mgmt.HDFSMgmtServer --userfolder --ldapGroup $ldapGroup --ad_keytab $ad_keytab --ad_upn $ad_upn --hdfs_keytab $hdfs_keytab --hdfs_upn $hdfs_upn
+				REALPID=`/bin/ps guaxww | /bin/grep  HDFSMgmtServer | /bin/grep jsvc | /bin/grep root | /bin/awk '{print $2}';`
+				/bin/echo $REALPID > $PIDFILE
+			else
+        		/bin/echo "Java Defined for Hadoop Missing on Node"
+        		exit 1
+			fi
+     	;;
+        stop)
+	 		REALPID=`/bin/ps guaxww | /bin/grep  HDFSMgmtServer | /bin/grep jsvc | /bin/grep root | /bin/awk '{print $2}';`
+	 		FILEPID=`/bin/cat $PIDFILE`
+	 		if [[ "$REALPID" == "$FILEPID" ]] ; then
+				/bin/kill -15 $FILEPID
+				if [ -e $PIDFILE ] ; then
+					/bin/rm $PIDFILE
+				fi
+	 		else
+				/bin/kill -15 $REALPID
+				if [ -e $PIDFILE ] ; then
+					/bin/rm $PIDFILE
+				fi			 
+			fi
+     	;;
+       *)
+            /bin/echo $"Usage: $0 {start|stop|restart|status}"
+            exit 1
+ 
+esac
