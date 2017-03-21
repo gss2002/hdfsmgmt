@@ -31,7 +31,7 @@
 						<configuration>
 							<descriptor>assembly.xml</descriptor>
 							<tarLongFileMode>posix</tarLongFileMode>
-							<outputDirectory>${pom.artifactId}/</outputDirectory>
+							<outputDirectory>${project.artifactId}/</outputDirectory>
 						</configuration>
 						<executions>
 							<execution>

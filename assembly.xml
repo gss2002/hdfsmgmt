@@ -5,7 +5,7 @@
 	<formats>
 		<format>tar.gz</format>
 	</formats>
-	<baseDirectory>${project.basedir}</baseDirectory>
+	<baseDirectory>${project.artifactId}</baseDirectory>
 	<fileSets>
 		<fileSet>
 			<directory>${project.basedir}</directory>
