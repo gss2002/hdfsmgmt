@@ -26,6 +26,17 @@
 
 	<properties>
 		<app.home>/opt/hdfsmgmt/</app.home>
+		<app.log.home>/var/log/hdfsmgmt/</app.log.home>
+		<install.user>root</install.user>
+		<hdfs.super.user>hdfs</hdfs.super.user>
+		<hadoop.group>hadoop</hadoop.group>
+		<java.version>1.8</java.version>
+		<hadoop.version>2.7.3</hadoop.version>
+		<adldap.version>1.0</adldap.version>
+		<commons.daemon.version>1.0.15</commons.daemon.version>
+		<log4j.version>1.2.17</log4j.version>
+		<slf4j.version>1.7.7</slf4j.version>
+		<systemd.path>/etc/systemd/system/</systemd.path>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<profiles>
@@ -100,8 +111,8 @@
 								<mapping>
 									<directory>${app.home}</directory>
 									<filemode>755</filemode>
-									<username>root</username>
-									<groupname>root</groupname>
+									<username>${install.user}</username>
+									<groupname>${install.user}</groupname>
 									<sources>
 										<source>
 											<location>${project.basedir}/src/main/resources/bin/hdfsmgmt</location>
@@ -112,11 +123,11 @@
 									</sources>
 								</mapping>
 								<mapping>
-									<directory>/etc/systemd/system/</directory>
+									<directory>${systemd.path}</directory>
 									<directoryIncluded>false</directoryIncluded>
 									<filemode>755</filemode>
-									<username>root</username>
-									<groupname>root</groupname>
+									<username>${install.user}</username>
+									<groupname>${install.user}</groupname>
 									<sources>
 										<source>
 											<location>${project.basedir}/src/main/resources/hdfsmgmt.service</location>
@@ -127,8 +138,8 @@
 									<directory>${app.home}</directory>
 									<directoryIncluded>true</directoryIncluded>
 									<filemode>755</filemode>
-									<username>root</username>
-									<groupname>root</groupname>
+									<username>${install.user}</username>
+									<groupname>${install.user}</groupname>
 									<sources>
 										<source>
 											<location>${project.basedir}/src/main/resources/bin/</location>
@@ -138,8 +149,8 @@
 								<mapping>
 									<directory>${app.home}/conf/</directory>
 									<filemode>755</filemode>
-									<username>root</username>
-									<groupname>root</groupname>
+									<username>${install.user}</username>
+									<groupname>${install.user}</groupname>
 									<sources>
 										<source>
 											<location>${project.basedir}/src/main/resources/conf/hdfsmgmt.config</location>
@@ -150,10 +161,10 @@
 									</sources>
 								</mapping>
 								<mapping>
-									<directory>/var/log/hdfsmgmt/</directory>
+									<directory>${app.log.home}</directory>
 									<filemode>775</filemode>
-									<username>hdfs</username>
-									<groupname>hadoop</groupname>
+									<username>${hdfs.super.user}</username>
+									<groupname>${hadoop.group}</groupname>
 								</mapping>
 							</mappings>
 						</configuration>
@@ -172,8 +183,8 @@
 				<version>2.3.2</version>
 				<configuration>
 					<fork>true</fork>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -193,46 +204,46 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-auth</artifactId>
-			<version>2.7.3</version>
+			<version>${hadoop.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-hdfs</artifactId>
-			<version>2.7.3</version>
+			<version>${hadoop.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>2.7.3</version>
+			<version>${hadoop.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache</groupId>
 			<artifactId>adldap</artifactId>
-			<version>1.0</version>
+			<version>${adldap.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
-			<version>1.0.15</version>
+			<version>${commons.daemon.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>${log4j.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.7</version>
+			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.7</version>
+			<version>${slf4j.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
