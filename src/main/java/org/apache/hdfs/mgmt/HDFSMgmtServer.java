@@ -39,7 +39,7 @@ public class HDFSMgmtServer implements Daemon {
 	private static final Logger LOG = LoggerFactory.getLogger(HDFSMgmtServer.class);
 	static Options options = new Options();
 	static Configuration conf = new Configuration();
-    UsrFolderThread csuf;
+	HdfsThreadHealth hdfsThreadHealth;
 
 
 
@@ -84,6 +84,9 @@ public class HDFSMgmtServer implements Daemon {
 		options.addOption("userfolder", false, "Create and/or set HDFS /user/username perms");
 		options.addOption("tmpcleanup", false, "Clean up HDFS /tmp folder");
 		options.addOption("ldapGroup", true, "LdapGroup for usage with --userfolder option");
+		options.addOption("ldapServer", true, "LdapServer for usage with --userfolder option");
+		options.addOption("ldapSSL", false, "LdapSSL for usage with --userfolder option");
+		options.addOption("ldapBaseDN", true, "LDAPBaseDN sets LDAPBaseDN --userfolder option");
 	    options.addOption("hdfs_keytab", true, "HDFS SuperUser Kerberos keytab file to connect to HDFS --hdfs_keytab /etc/security/keytabs/hdfs.headless.keytab");
 	    options.addOption("hdfs_upn", true, "HDFS SuperUser Kerberos Princpial for keytab to connect to HDFS --hdfs_upn hdfs-tech@TECH.HDP.EXAMPLE.COM");
 	    options.addOption("ad_keytab", true, "AD Ldap Keytab File to connect to LDAP for Group Membership --ad_keytab $HOME/aduser.keytab");
@@ -103,6 +106,23 @@ public class HDFSMgmtServer implements Daemon {
 				HDFSMgmtBean.ldapGroup = cmd.getOptionValue("ldapGroup");
 				HDFSMgmtBean.userFolder = true;
 				if (!cmd.hasOption("ldapGroup")) {
+					missingParams();
+				}
+				if (cmd.hasOption("ldapSSL")) {
+					System.setProperty("ldap.ssl", "true");
+				} else {
+					System.setProperty("ldap.ssl", "false");
+				}
+				if (cmd.hasOption("ldapServer")) {
+					System.setProperty("ldapServer", cmd.getOptionValue("ldapServer"));
+					HDFSMgmtBean.gcldapURL =System.getProperty("ldapServer");
+				} else {
+					missingParams();
+				}
+				if (cmd.hasOption("ldapBaseDN")) {
+					System.setProperty("ldapBaseDN", cmd.getOptionValue("ldapBaseDN"));
+					HDFSMgmtBean.gcbaseDn =System.getProperty("ldapBaseDN");
+				} else {
 					missingParams();
 				}
 			}
@@ -150,16 +170,17 @@ public class HDFSMgmtServer implements Daemon {
 	@Override
 	public void start() throws Exception {
 		// TODO Auto-generated method stub
-	    csuf = new UsrFolderThread();
-	    csuf.setName("CreateSetUsrFolder-Thread");
-	    csuf.setDaemon(true);
-	    csuf.start();
+	    hdfsThreadHealth = new HdfsThreadHealth();
+	    hdfsThreadHealth.setName("HdfsHealth-Thread");
+	    hdfsThreadHealth.setDaemon(true);
+	    hdfsThreadHealth.start();
 	}
+	
 
 	@Override
 	public void stop() throws Exception {
 		// TODO Auto-generated method stub
-		csuf.interrupt();
+		hdfsThreadHealth.interrupt();
 		
 		
 	}
@@ -167,7 +188,7 @@ public class HDFSMgmtServer implements Daemon {
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
-		csuf.interrupt();
+		hdfsThreadHealth.interrupt();
 	}
 
 }

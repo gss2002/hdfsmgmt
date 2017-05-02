@@ -1,0 +1,6 @@
+ldapGroup=VARIABLE_MISSING_HERE_PLEASE_FILL_IN_NOW
+ad_keytab=username.keytab
+hdfs_keytab=/etc/security/keytabs/hdfs.headless.keytab
+ldapServer=ldaps://seniadc1.hdpusr.senia.org:3269
+ldapSSL=true
+ldapBaseDN=dc=hdpusr,dc=senia,dc=org

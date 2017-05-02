@@ -45,7 +45,16 @@ case "$1" in
 				hdfs_upn=`/bin/klist -k /etc/security/keytabs/hdfs.headless.keytab | tail -1 | awk '{print $NF}';`
 				ad_upn=`/bin/klist -k $ad_keytab | tail -1 | awk '{print $NF}';`
 				hdfs_upn=`/bin/klist -k $hdfs_keytab | tail -1 | awk '{print $NF}';`
-        		/usr/lib/bigtop-utils/jsvc -jvm server -user hdfs -outfile /var/log/hdfsmgmt/hdfsmgmt.out -Dlog4j.configuration=file://$bin/conf/log4j.properties -cp "$bin/lib/*:$HADOOP_CLIENT_LIBS/*" org.apache.hdfs.mgmt.HDFSMgmtServer --userfolder --ldapGroup $ldapGroup --ad_keytab $ad_keytab --ad_upn $ad_upn --hdfs_keytab $hdfs_keytab --hdfs_upn $hdfs_upn
+				ldapserver=`/bin/grep ldapServer $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="ldapServer="} {print $NF}';`
+				ldapbasedn=`/bin/grep ldapBaseDN $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="ldapBaseDN="} {print $NF}';`
+				ldapssl=`/bin/grep ldapSSL $bin/conf/hdfsmgmt.config  | /bin/awk 'BEGIN {FS="ldapSSL="} {print $NF}';`
+			   	if [ "$ldapssl" == "true" ] ; then
+			    		/usr/lib/bigtop-utils/jsvc -jvm server -user hdfs -outfile /var/log/hdfsmgmt/hdfsmgmt.out -Dlog4j.configuration=file://$bin/conf/log4j.properties -cp "$bin/lib/*:$HADOOP_CLIENT_LIBS/*" org.apache.hdfs.mgmt.HDFSMgmtServer --userfolder --ldapGroup $ldapGroup --ldapBaseDN $ldapbasedn --ldapServer $ldapserver --ldapSSL --ad_keytab $ad_keytab --ad_upn $ad_upn --hdfs_keytab $hdfs_keytab --hdfs_upn $hdfs_upn
+					echo "LDAP SSL"	
+				else 
+			    		/usr/lib/bigtop-utils/jsvc -jvm server -user hdfs -outfile /var/log/hdfsmgmt/hdfsmgmt.out -Dlog4j.configuration=file://$bin/conf/log4j.properties -cp "$bin/lib/*:$HADOOP_CLIENT_LIBS/*" org.apache.hdfs.mgmt.HDFSMgmtServer --userfolder --ldapGroup $ldapGroup --ldapBaseDN $ldapbasedn --ldapServer $ldapserver --ad_keytab $ad_keytab --ad_upn $ad_upn --hdfs_keytab $hdfs_keytab --hdfs_upn $hdfs_upn				
+					echo "LDAP NO SSL"
+				fi
 				REALPID=`/bin/ps guaxww | /bin/grep  HDFSMgmtServer | /bin/grep jsvc | /bin/grep root | /bin/awk '{print $2}';`
 				/bin/echo $REALPID > $PIDFILE
 			else

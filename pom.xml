@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.hdfs.mgmt</groupId>
 	<artifactId>hdfsmgmt</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<name>hdfsmgmt</name>
 	<packaging>jar</packaging>
 
@@ -32,7 +32,7 @@
 		<hadoop.group>hadoop</hadoop.group>
 		<java.version>1.8</java.version>
 		<hadoop.version>2.7.3</hadoop.version>
-		<adldap.version>1.0</adldap.version>
+		<adldap.version>1.1</adldap.version>
 		<commons.daemon.version>1.0.15</commons.daemon.version>
 		<log4j.version>1.2.17</log4j.version>
 		<slf4j.version>1.7.7</slf4j.version>
@@ -153,7 +153,7 @@
 									<groupname>${install.user}</groupname>
 									<sources>
 										<source>
-											<location>${project.basedir}/src/main/resources/conf/hdfsmgmt.config</location>
+											<location>${project.basedir}/src/main/resources/conf/hdfsmgmt.config.template</location>
 										</source>
 										<source>
 											<location>${project.basedir}/src/main/resources/conf/log4j.properties</location>

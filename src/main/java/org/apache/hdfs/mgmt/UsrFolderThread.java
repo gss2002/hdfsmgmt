@@ -60,13 +60,25 @@ public class UsrFolderThread extends Thread {
 		ldapGroup = HDFSMgmtBean.ldapGroup;
 		gcbaseDn = HDFSMgmtBean.gcbaseDn;
 		gcldapURL = HDFSMgmtBean.gcldapURL;
-		try {
-			userPrincipalName = UserGroupInformation.getCurrentUser().getUserName();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (!(HDFSMgmtBean.useAdKeytab)) {
+			try {
+				userPrincipalName = UserGroupInformation.getCurrentUser().getUserName();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-
+		try {
+			if (HDFSMgmtBean.useHdfsKeytab) {
+				LOG.info("Using HDFS Keytab - Logging in User");
+				UserGroupInformation.loginUserFromKeytab(HDFSMgmtBean.hdfs_keytabupn,HDFSMgmtBean.hdfs_keytab);
+	            ugi = UserGroupInformation.getLoginUser();
+			} else {
+				ugi = UserGroupInformation.getCurrentUser();
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 	}
 
@@ -93,10 +105,13 @@ public class UsrFolderThread extends Thread {
 
 		try {
 			if (HDFSMgmtBean.useHdfsKeytab) {
-	            ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(HDFSMgmtBean.hdfs_keytabupn,HDFSMgmtBean.hdfs_keytab);
-	            UserGroupInformation.setLoginUser(ugi);
+				LOG.info("Using HDFS Keytab - Logging/ReLogging in User via Keytab");
+	            ugi.reloginFromKeytab();
+				LOG.info("Using HDFS KeyTab CurrentUser "+ugi.getUserName());
 			} else {
-				ugi = UserGroupInformation.getCurrentUser();
+				LOG.info("Using HDFS TicketCache - Logging/ReLogging in User via TicketCache");
+				ugi.reloginFromTicketCache();
+				LOG.info("Using HDFS CurrentUser "+ugi.getUserName());
 			}
 			LOG.debug("HdfsUPN: "+ugi.getUserName());
 			if (HDFSMgmtBean.useAdKeytab) {

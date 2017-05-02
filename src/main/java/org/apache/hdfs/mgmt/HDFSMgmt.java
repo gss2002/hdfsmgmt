@@ -55,6 +55,9 @@ public class HDFSMgmt {
 		options.addOption("userfolder", false, "Create and/or set HDFS /user/username perms");
 		options.addOption("tmpcleanup", false, "Clean up HDFS /tmp folder");
 		options.addOption("ldapGroup", true, "LdapGroup for usage with --userfolder option");
+		options.addOption("ldapServer", true, "LdapServer for usage with --userfolder option");
+		options.addOption("ldapSSL", false, "LdapSSL for usage with --userfolder option");
+		options.addOption("ldapBaseDN", true, "LDAPBaseDN sets LDAPBaseDN --userfolder option");
 	    options.addOption("hdfs_keytab", true, "HDFS SuperUser Kerberos keytab file to connect to HDFS --hdfs_keytab /etc/security/keytabs/hdfs.headless.keytab");
 	    options.addOption("hdfs_upn", true, "HDFS SuperUser Kerberos Princpial for keytab to connect to HDFS --hdfs_upn hdfs-tech@TECH.HDP.EXAMPLE.COM");
 	    options.addOption("ad_keytab", true, "AD Ldap Keytab File to connect to LDAP for Group Membership --ad_keytab $HOME/aduser.keytab");
@@ -76,6 +79,21 @@ public class HDFSMgmt {
 				if (!cmd.hasOption("ldapGroup")) {
 					missingParams();
 				}
+				if (cmd.hasOption("ldapSSL")) {
+					System.setProperty("ldap.ssl", "true");
+				} else {
+					System.setProperty("ldap.ssl", "false");
+				}
+				if (!(cmd.hasOption("ldapServer"))) {
+					missingParams();
+				} else {
+					System.setProperty("ldapServer", cmd.getOptionValue("ldapServer"));
+				}
+				if (!(cmd.hasOption("ldapBaseDN"))) {
+					missingParams();
+				} else {
+					System.setProperty("ldapBaseDN", cmd.getOptionValue("ldapBaseDN"));
+				}				
 			}
 			if (cmd.hasOption("tmpcleanup")){
 		
